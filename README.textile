@@ -1,0 +1,50 @@
+h1. What is GitHub?
+
+"GitHub":http://www.github.com/ is a hosting service for "git-based":http://git-scm.com/ repositories with social networking functionality. 
+
+GitHub is big:
+
+* As of April 2011, it "hosts 2,000,000 repositories and 900,000 gists":https://github.com/blog/841-those-are-some-big-numbers. 
+* In September 21, 2011 they announced they had over "1 million users":https://github.com/blog/936-one-million.
+
+h1. Relationship Types
+
+Specifically GitHub has the following relationships:
+
+* user belongs to organization
+* user following user
+* user owns repository
+* user watching repository
+* user forking repository
+* user contributing to a repository
+
+h1. The 2009 Contest
+
+bq. &ldquo;So, the problem is that we want to recommend repositories to you when you log into GitHub that you'll love. How do we find the perfect projects for you? I wanted to just look at networks of what people were watching and figure out what you might like by what your friends liked.&rdquo; &mdash; schacon, "Build a recommendation system":https://github.com/blog/466-the-2009-github-contest, July 29, 2009.
+
+h1. Problems with the 2009 Contest
+
+The social aspects of the data were limited to only:
+
+* user watches repository
+* user forks repository
+
+h1. What do we want to do?
+
+# Use the GitHub API to compile all relationship types (permission obtained).
+# Build a recommendation system that generates new _contributors_ not watchers.
+
+h1. Why is this different?
+
+Watchers are not contributors. Contributors advance software. Watchers don't.
+
+h1. Why does this matter?
+
+Personal example: most of my public repositories are experiments in agent-based modeling. NetLogo has been on GitHub for months &mdash; and I found out last week.
+
+h1. Mid-term and exams
+
+For the mid-term, data must be collected. 
+
+The final exam would be an evaluation of how well our algorithm predicts a potential collaborator for known collaborators when collaboration is witheld. (That is how GitHub ran the contest.)
+
