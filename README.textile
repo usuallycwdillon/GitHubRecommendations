@@ -31,7 +31,7 @@ The social aspects of the data were limited to only:
 
 h1. What do we want to do?
 
-# Use the GitHub API to compile all relationship types (permission obtained).
+# Use the GitHub API to compile all relationship types.
 # Build a recommendation system that generates new _contributors_ not watchers.
 
 h1. Why is this different?
