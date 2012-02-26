@@ -1,0 +1,9 @@
+*.pdf
+*.out
+*.aux
+*.log
+target/
+lib_managed/
+src_managed/
+project/boot/
+

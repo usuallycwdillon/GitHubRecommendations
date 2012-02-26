@@ -1,0 +1,20 @@
+\documentclass{article}
+  \title{Designing a Recommendation Algorithm for GitHub}
+  \author{CW Dillon, John Bjorn Nelson, and Ge Yan}
+  \usepackage{fullpage}
+\begin{document}
+  \maketitle
+  
+  \section*{Abstract}
+  
+  GitHub is a hosting service for git-based repositories. It launched in April 2008\footnote{https://github.com/blog/40-we-launched}. As of April 2011, it hosts 2,000,000 repositories and 900,000 gists;\footnote{See: https://github.com/blog/841-those-are-some-big-numbers} in September 21, 2011, GitHub announced it had over 1 million users.\footnote{See: https://github.com/blog/936-one-million} GitHub represents a departure from traditional version control hosting services in that it emphasizes the social aspects of software development. As such, the use of Social Network Analysis (SNA) may be useful in identifying and perhaps beneficially modifying patterns of user interaction.
+  
+  GitHub was aware of such potential at an early point of development. In 2009, a contest was created that gave users a snapshot of the available data.\footnote{See: https://github.com/blog/466-the-2009-github-contest} The purpose of this contest was to build a recommendation system that connected potential contributors with repositories that they would find interesting or useful. 
+  
+  From a social standpoint, the provided data were limited. Only the {\tt user watches repository} and {\tt user forks repository} relationships were provided.\footnote{Technically, only the {\tt user watches repository} relationship was explicitly provided; however, the {\tt user forked repository} relationship could be inferred.} Partially, this was a limitation of the feature set implemented by GitHub at the time. Since then, it has been extended. Currently, GitHub has relationships for 1) {\tt user belongs to organization}, 2) {\tt user follows user}, 3) {\tt user owns repository}, 4) {\tt user watches repository}, 5) {\tt user forks repository}, and 6) {\tt user contributes to repository}. 
+  
+  These additional relationship types should extend the predictive power of social network analysis in the context of contributor potential. Most significantly, the {\tt user contributing to a repository} relationship denotes the strongest level of social commitment. To obtain status as a contributor the user must have 1) forked the repository, 2) modified it in a way that the original author found useful, 3) submitted a pull request, and 4) had the pull request accepted. 
+  
+  For our project, we will collect a snapshot of GitHub's current relationships through the public API. Using this data, we will explore the data in the hopes of designing an algorithm that is capable of generating recommendations that produce \emph{contributors}. This goal is more direct than the original aim of GitHub in their 2009 contest. Rather than using interest in the form of generating {\tt user watches repository} relationships as our fitness metric, we will try to generate {\tt user contributes to a repository} relationships. Inherent in the original contests setup was the idea that watches generate contributions, which may not be true. We believe that contributors are more valuable than watchers, as contributors advance the state of existing projects while watchers only represent potential contributors.
+  
+\end{document}
