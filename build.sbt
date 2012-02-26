@@ -16,7 +16,8 @@ libraryDependencies += "org.scala-tools.time" % "time_2.9.1" % "0.5"
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.7",
   "org.specs2" %% "specs2-scalaz-core" % "6.0.1" % "test",
-  "org.eclipse.mylyn.github" % "org.eclipse.egit.github.core" % "1.2.1-SNAPSHOT"
+  "org.eclipse.mylyn.github" % "org.eclipse.egit.github.core" % "1.2.1-SNAPSHOT",
+  "org.neo4j" % "neo4j-community" % "1.6"
 )
 
 resolvers ++= Seq(
