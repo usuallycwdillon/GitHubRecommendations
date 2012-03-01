@@ -1,15 +1,10 @@
-h1. What is GitHub?
+h1. What is this project?
 
-"GitHub":http://www.github.com/ is a hosting service for "git-based":http://git-scm.com/ repositories with social networking functionality. 
+"Maksim2042":https://github.com/maksim2042 teaches a "Social Network Analysis":http://catalog.gmu.edu/preview_course_nopop.php?catoid=15&coid=95835 class at "GMU":http://www.gmu.edu/, largely based on his book "Social Network Analysis for Startups":http://shop.oreilly.com/product/0636920020424.do. I've been meaning to collect the "GitHub":http://www.github.com/ data out of curiosity for months, but haven't found the time. Happily, one of the requirements of his class can be fullfilled by moving my dusty, back burner idea to the front burner.
 
-GitHub is big:
+h2. The Project
 
-* As of April 2011, it "hosts 2,000,000 repositories and 900,000 gists":https://github.com/blog/841-those-are-some-big-numbers. 
-* In September 21, 2011 they announced they had over "1 million users":https://github.com/blog/936-one-million.
-
-h1. Relationship Types
-
-Specifically GitHub has the following relationships:
+I am part of a three person group interested in studying the social network properties of coders on GitHub. GitHub has the following relationship types:
 
 * user belongs to organization
 * user following user
@@ -18,33 +13,10 @@ Specifically GitHub has the following relationships:
 * user forking repository
 * user contributing to a repository
 
-h1. The 2009 Contest
+From these relationship types, we would like to see if we can predict _collaborations_. This is somewhat similar to a 2009 Contest held by GitHub. Quoting:
 
 bq. &ldquo;So, the problem is that we want to recommend repositories to you when you log into GitHub that you'll love. How do we find the perfect projects for you? I wanted to just look at networks of what people were watching and figure out what you might like by what your friends liked.&rdquo; &mdash; schacon, "Build a recommendation system":https://github.com/blog/466-the-2009-github-contest, July 29, 2009.
 
-h1. Problems with the 2009 Contest
+The main difference is we are interested in generating _contributors_, not watchers. Contributors advance software, watchers don't.
 
-The social aspects of the data were limited to only:
-
-* user watches repository
-* user forks repository
-
-h1. What do we want to do?
-
-# Use the GitHub API to compile all relationship types.
-# Build a recommendation system that generates new _contributors_ not watchers.
-
-h1. Why is this different?
-
-Watchers are not contributors. Contributors advance software. Watchers don't.
-
-h1. Why does this matter?
-
-Personal example: most of my public repositories are experiments in agent-based modeling. NetLogo has been on GitHub for months &mdash; and I found out last week.
-
-h1. Mid-term and exams
-
-For the mid-term, data must be collected. 
-
-The final exam would be an evaluation of how well our algorithm predicts a potential collaborator for known collaborators when collaboration is witheld. (That is how GitHub ran the contest.)
 
