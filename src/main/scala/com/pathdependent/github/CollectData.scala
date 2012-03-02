@@ -25,10 +25,17 @@ object CollectData {
   
   def main(args: Array[String]) {
     parseArgs(args)
-    
+        
     // Keep after the database loading. Although it is small now, the load time
     // will be significant later on.
     nextReset = DateTime.now + 1.hours
+    
+    if(db.users.size == 0) { 
+      ProminentUsers foreach db.getUser 
+      db.save()
+    }
+    
+    fetchAll()
   }
   
   def parseArgs(args: Array[String]) {
@@ -42,22 +49,15 @@ object CollectData {
         println("Usage: CollectData username password database")
         System.exit(0)
     }
-    
-    if(db.users.size == 0) { 
-      ProminentUsers foreach db.getUser 
-      db.save()
-    }
-    
-    fetchAll()
   }
   
   def fetchAll() {
     var userFetchQueue = mutable.Stack[FetchedUser]() ++ db.uncollectedUsers
     var repoFetchQueue = mutable.Stack[FetchedRepo]() ++ db.uncollectedRepos
     
-    var fetchCounter = 1
+    var fetchCounter = 0
     do {
-      if(fetchCounter % 3 > 0) {
+      if(fetchCounter % 5 > 0) {
         if(userFetchQueue.isEmpty) { 
           userFetchQueue pushAll db.uncollectedUsers 
         }
@@ -97,6 +97,7 @@ object CollectData {
         System.err.println(e)
         e.printStackTrace()
         resetAPICounter()
+        safeAPIRequest(request)
     }
   }
   
@@ -194,6 +195,8 @@ object CollectData {
         fetchedRepo.watchers += fetchedUser
       }
     }
+    
+    fetchedRepo.collected = true
   }
 }
 
