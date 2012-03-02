@@ -9,7 +9,7 @@ case class FetchedUser (
   var repositories: mutable.Set[FetchedRepo] = mutable.Set(),
   var collaborations: mutable.Set[FetchedRepo] = mutable.Set(),
   var watching: mutable.Set[FetchedRepo] = mutable.Set(),
-  var followers: mutable.Set[FetchedRepo] = mutable.Set(),
+  var followers: mutable.Set[FetchedUser] = mutable.Set(),
   var gists: mutable.Set[Gist] = mutable.Set(),
   var organizations: mutable.Set[User] = mutable.Set(),
   var collected: Boolean = false
