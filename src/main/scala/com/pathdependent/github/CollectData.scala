@@ -57,13 +57,16 @@ object CollectData {
     
     var fetchCounter = 0
     do {
-      if(fetchCounter % 5 > 0) {
+      // For now, I'm more interested in user-collaborates-on-repository
+      // In this case, queries on the repository get more bang for the API limit 
+      // buck, since they...sort of join on the users. 5 is an arbitrary guess.
+      if(fetchCounter % 5 == 0) {
         if(userFetchQueue.isEmpty) { 
           userFetchQueue pushAll db.uncollectedUsers 
         }
         
         if(!userFetchQueue.isEmpty) {
-          safeAPIRequest(collectUser(userFetchQueue.pop.name))
+          collectUser(userFetchQueue.pop.name)
         }
         
       } else {
@@ -72,7 +75,7 @@ object CollectData {
         }
         
         if(!repoFetchQueue.isEmpty) {
-          safeAPIRequest(collectRepo(repoFetchQueue.pop.id))
+          collectRepo(repoFetchQueue.pop.id)
         }
       }
       fetchCounter += 1
@@ -81,17 +84,25 @@ object CollectData {
     db.save()
   }
   
-  def safeAPIRequest(request: => Unit) {
-    // The technical limit is 5000 per hour, but I didn't see a straight-forward
-    // way to figure out how to view the RateLimit http header in the library
-    // I'm using, so this *should* work while being polite.
+  /** 
+   * @note The technical limit is 5000 per hour, but I didn't see a 
+   *   straight-forward way to figure out how to view the RateLimit http header 
+   *   in the library I'm using, so this *should* work while being polite.
+   *
+   * @note This function has a pretty big bug, in that, if the API throws an
+   *   an error for non-exception reasons (I don't know if it does yet), then
+   *   this call will be repeated until the stack overflows, which will take 
+   *   a long time given the hour sleep.
+   */
+  def safeAPIRequest[T](request: => T): T = {
+    // 
     if(apiHits >= 4950) { 
       db.save() // Why not, we're not doing anything else.
       resetAPICounter() 
     }
     
     try {
-      request
+      return request
     } catch {
       case e =>
         System.err.println(e)
@@ -125,13 +136,17 @@ object CollectData {
     if(!fetchedUser.user.isDefined) {
       apiHits += 1
       val userService = new UserService(client)
-      fetchedUser.user = Some(userService.getUser(userName))
+      fetchedUser.user = Some(safeAPIRequest { userService.getUser(userName) })
     }
     
     // collect the users repositories, if nessessary.
     if(fetchedUser.repositories.size == 0) {
       val repositoryService = new RepositoryService(client)
-      val repos = repositoryService.getRepositories(userName).toList
+      
+      val repos = safeAPIRequest { 
+        repositoryService.getRepositories(userName) 
+      }.toList
+      
       apiHits += (repos.length / 100.0).ceil.toInt max 1
       repos.foreach { repo =>
         val fetchedRepo = db.getRepo(repo.getId)
@@ -156,8 +171,9 @@ object CollectData {
     // Collect the collaborators, if nessesary.
     if(fetchedRepo.collaborators.size == 0) {
       val collaboratorService = new CollaboratorService(client)
-      val collaborators = collaboratorService.
-        getCollaborators(fetchedRepo.repository)
+      val collaborators = safeAPIRequest{
+        collaboratorService.getCollaborators(fetchedRepo.repository)
+      }
       
       apiHits += (collaborators.length / 100.0).ceil.toInt max 1
       
@@ -179,7 +195,9 @@ object CollectData {
     if(fetchedRepo.watchers.size == 0) {
       val watcherService = new WatcherService(client)
       
-      val watchers = watcherService.getWatchers(fetchedRepo.repository)
+      val watchers = safeAPIRequest {
+        watcherService.getWatchers(fetchedRepo.repository)
+      }
 
       apiHits += (watchers.length / 100.0).ceil.toInt max 1
       
