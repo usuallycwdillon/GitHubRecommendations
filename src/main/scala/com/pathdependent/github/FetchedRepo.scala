@@ -6,8 +6,8 @@ import org.eclipse.egit.github.core.Repository
 case class FetchedRepo (
   var id: Long,
   var repository: Repository = null,
-  var watchers: mutable.Set[FetchedUser] = mutable.Set(),
-  var collaborators: mutable.Set[FetchedUser] = mutable.Set(),
+  var watchers: mutable.Set[String] = mutable.Set(),
+  var collaborators: mutable.Set[String] = mutable.Set(),
   var collected: Boolean = false
 ) {
   /**
@@ -20,4 +20,10 @@ case class FetchedRepo (
 
 object FetchedRepo {
   val serialVersionUID = 87657654567888L
+  
+  val Schema = """CREATE TABLE repos (
+    repository_id BIGINT PRIMARY KEY,
+    serialized_object VARBINARY,
+    fetched BOOLEAN
+  )"""
 }

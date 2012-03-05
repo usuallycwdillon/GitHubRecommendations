@@ -6,12 +6,12 @@ import org.eclipse.egit.github.core.{Gist,User}
 case class FetchedUser (
   var name: String,
   var user: Option[User] = None,
-  var repositories: mutable.Set[FetchedRepo] = mutable.Set(),
-  var collaborations: mutable.Set[FetchedRepo] = mutable.Set(),
-  var watching: mutable.Set[FetchedRepo] = mutable.Set(),
-  var followers: mutable.Set[FetchedUser] = mutable.Set(),
-  var gists: mutable.Set[Gist] = mutable.Set(),
-  var organizations: mutable.Set[User] = mutable.Set(),
+  var repositories: mutable.Set[Long] = mutable.Set(),
+  var collaborations: mutable.Set[Long] = mutable.Set(),
+  var watching: mutable.Set[Long] = mutable.Set(),
+  var followers: mutable.Set[String] = mutable.Set(),
+  var gists: mutable.Set[Long] = mutable.Set(),
+  var organizations: mutable.Set[String] = mutable.Set(),
   var collected: Boolean = false
 ) {
 /**
@@ -26,4 +26,10 @@ case class FetchedUser (
 
 object FetchedUser {
   val serialVersionUID = 123456789876543L
+  
+  val Schema = """CREATE TABLE users (
+    user_name VARCHAR PRIMARY KEY,
+    serialized_object VARBINARY,
+    fetched BOOLEAN
+  )"""
 }

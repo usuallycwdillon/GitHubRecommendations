@@ -153,7 +153,7 @@ object CollectData {
         if(fetchedRepo.repository == null) { 
           fetchedRepo.repository = repo
         }
-        fetchedUser.repositories += fetchedRepo
+        fetchedUser.repositories += repo.getId
       }
     }
     
@@ -184,9 +184,9 @@ object CollectData {
           fetchedUser.user = Some(user)
         }
 
-        fetchedUser.collaborations += fetchedRepo
+        fetchedUser.collaborations += id
 
-        fetchedRepo.collaborators += fetchedUser
+        fetchedRepo.collaborators += user.getLogin
       }
     }
   
@@ -208,9 +208,9 @@ object CollectData {
           fetchedUser.user = Some(user)
         }
 
-        fetchedUser.watching += fetchedRepo
+        fetchedUser.watching += id
         
-        fetchedRepo.watchers += fetchedUser
+        fetchedRepo.watchers += user.getLogin
       }
     }
     

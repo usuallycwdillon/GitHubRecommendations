@@ -3,6 +3,7 @@ package com.pathdependent.github
 import java.io._
 import scala.collection.mutable
 
+
 /**
  * @note I have a lot of RAM. This database is <i>in memory</i>. As it gets
  *       bigger, my project collaborators may have trouble. This probably
@@ -19,8 +20,6 @@ import scala.collection.mutable
 case class Database(fileName: String) {
   val users = mutable.Map.empty[String, FetchedUser]
   val repos = mutable.Map.empty[Long, FetchedRepo]
-
-  //transient val userIdToName = mutable.Map.empty[Int, String]
 
   def save() {
     val output = new ObjectOutputStream(new FileOutputStream(fileName))
@@ -39,11 +38,13 @@ case class Database(fileName: String) {
   def getRepo(id: Long): FetchedRepo = {
     repos getOrElseUpdate (id, FetchedRepo(id))
   }
+  
 }
 
 object Database {
   val serialVersionUID = 9876765456L
 
+  /** touch the fileName if not created already. */
   def load(fileName: String): Database = {
     try {
       val input = new ObjectInputStream(new FileInputStream(fileName))
