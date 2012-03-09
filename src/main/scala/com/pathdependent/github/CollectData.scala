@@ -1,5 +1,6 @@
 package com.pathdependent.github
 
+import java.util.{List => JList, ArrayList => JArrayList}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
@@ -75,12 +76,7 @@ object CollectData {
         }
         
         if(!repoFetchQueue.isEmpty) {
-          val repoID = repoFetchQueue.pop.id
-          if(repoID != 3635477 && 
-             repoID != 3061134 && 
-             repoID != 59143) { // Damn 404.
-            collectRepo(repoID)
-          }
+          collectRepo(repoFetchQueue.pop.id)
         }
       }
       fetchCounter += 1
@@ -97,7 +93,7 @@ object CollectData {
    * @note This function has a pretty big bug, in that, if the API throws an
    *   an error for non-exception reasons (I don't know if it does yet), then
    *   this call will be repeated until the stack overflows, which will take 
-   *   a long time given the hour sleep.
+   *   a long time given the hour sleep. 
    */
   def safeAPIRequest[T](request: => T): T = {
     // 
@@ -107,13 +103,28 @@ object CollectData {
     }
     
     try {
-      return request
+      request
     } catch {
       case e =>
         System.err.println(e)
         e.printStackTrace()
         resetAPICounter()
         safeAPIRequest(request)
+    }
+  }
+
+  def emptyOn404(request: => JList[User]): JList[User] = {
+    safeAPIRequest {
+      try {
+        request
+      } catch {
+        case e: RequestException =>
+          if(e.getStatus != 404) {
+            throw e
+          }
+          println("404 Encountered!")
+          new JArrayList[User]()
+      }
     }
   }
   
@@ -177,7 +188,9 @@ object CollectData {
     if(fetchedRepo.collaborators.size == 0) {
       val collaboratorService = new CollaboratorService(client)
       val collaborators = safeAPIRequest{
-        collaboratorService.getCollaborators(fetchedRepo.repository)
+        emptyOn404 {
+          collaboratorService.getCollaborators(fetchedRepo.repository)
+        }
       }
       
       apiHits += (collaborators.length / 100.0).ceil.toInt max 1
@@ -201,7 +214,9 @@ object CollectData {
       val watcherService = new WatcherService(client)
       
       val watchers = safeAPIRequest {
-        watcherService.getWatchers(fetchedRepo.repository)
+        emptyOn404 {
+          watcherService.getWatchers(fetchedRepo.repository)
+        }
       }
 
       apiHits += (watchers.length / 100.0).ceil.toInt max 1
