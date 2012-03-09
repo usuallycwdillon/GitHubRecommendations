@@ -75,7 +75,12 @@ object CollectData {
         }
         
         if(!repoFetchQueue.isEmpty) {
-          collectRepo(repoFetchQueue.pop.id)
+          val repoID = repoFetchQueue.pop.id
+          if(repoID != 3635477 && 
+             repoID != 3061134 && 
+             repoID != 59143) { // Damn 404.
+            collectRepo(repoID)
+          }
         }
       }
       fetchCounter += 1

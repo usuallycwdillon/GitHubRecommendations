@@ -25,6 +25,12 @@ case class Database(fileName: String) {
     val output = new ObjectOutputStream(new FileOutputStream(fileName))
     output.writeObject(this);
     output.close();
+    
+    // Save backup incase something goes wrong with serialization.
+    Runtime.
+      getRuntime.
+      exec("cp " + fileName + " " + fileName + ".bak").
+      waitFor()
   }
   
   def uncollectedUsers() = users.values.filterNot(_.collected)
