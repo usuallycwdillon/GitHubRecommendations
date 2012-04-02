@@ -100,20 +100,22 @@ object OutputData {
       db.repos.values foreach { fetchedRepository =>
         val repo = fetchedRepository.repository
         if(repo != null) {
-          "%d\t%b\t%b\t%b\t%b\t%s\t%d\t%d\t%s\t%s\t%s".format(
-            repo.getId,
-            repo.isFork,
-            repo.isHasDownloads,
-            repo.isHasIssues,
-            repo.isHasWiki,
-            repo.getCreatedAt,
-            repo.getOpenIssues,
-            repo.getForks,
-            repo.getSize,
-            repo.getWatchers,
-            repo.getHomepage,
-            repo.getLanguage,
-            repo.getName
+          output.println(
+            "%d\t%b\t%b\t%b\t%b\t%s\t%d\t%d\t%s\t%s\t%s".format(
+              repo.getId,
+              repo.isFork,
+              repo.isHasDownloads,
+              repo.isHasIssues,
+              repo.isHasWiki,
+              repo.getCreatedAt,
+              repo.getOpenIssues,
+              repo.getForks,
+              repo.getSize,
+              repo.getWatchers,
+              repo.getHomepage,
+              repo.getLanguage,
+              repo.getName
+            )
           )
         }
       }
