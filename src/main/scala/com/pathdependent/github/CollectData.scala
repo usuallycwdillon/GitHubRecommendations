@@ -58,10 +58,7 @@ object CollectData {
     
     var fetchCounter = 0
     do {
-      // For now, I'm more interested in user-collaborates-on-repository
-      // In this case, queries on the repository get more bang for the API limit 
-      // buck, since they...sort of join on the users. 5 is an arbitrary guess.
-      if(fetchCounter % 5 == 0) {
+      if(fetchCounter % 5 > 0) {
         if(userFetchQueue.isEmpty) { 
           userFetchQueue pushAll db.uncollectedUsers 
         }
@@ -97,7 +94,7 @@ object CollectData {
    */
   def safeAPIRequest[T](request: => T): T = {
     // 
-    if(apiHits >= 4950) { 
+    if(apiHits >= 5000) { 
       db.save() // Why not, we're not doing anything else.
       resetAPICounter() 
     }
@@ -105,11 +102,17 @@ object CollectData {
     try {
       request
     } catch {
-      case e =>
+      case e: RequestException =>
         System.err.println(e)
         e.printStackTrace()
         resetAPICounter()
         safeAPIRequest(request)
+      case e: java.io.IOException =>
+        System.err.println(e)
+        e.printStackTrace()
+        resetAPICounter()
+        safeAPIRequest(request)
+      case e => throw e
     }
   }
 
@@ -127,7 +130,22 @@ object CollectData {
       }
     }
   }
-  
+
+  def emptyOn404R(request: => JList[Repository]): JList[Repository] = {
+    safeAPIRequest {
+      try {
+        request
+      } catch {
+        case e: RequestException =>
+          if(e.getStatus != 404) {
+            throw e
+          }
+          println("404 Encountered!")
+          new JArrayList[Repository]()
+      }
+    }
+  }
+
   /**
    * More sloppiness!
    */ 
@@ -139,7 +157,7 @@ object CollectData {
       System.out.println("Sleeping until: " + nextReset)
       Thread.sleep((new Duration(DateTime.now, nextReset)).getMillis)
     }
-    
+  
     nextReset = DateTime.now + 1.hours
     apiHits = 0
   }
@@ -160,7 +178,9 @@ object CollectData {
       val repositoryService = new RepositoryService(client)
       
       val repos = safeAPIRequest { 
-        repositoryService.getRepositories(userName) 
+        emptyOn404R {
+          repositoryService.getRepositories(userName) 
+        }
       }.toList
       
       apiHits += (repos.length / 100.0).ceil.toInt max 1

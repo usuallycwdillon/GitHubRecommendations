@@ -7,3 +7,6 @@ lib_managed/
 src_managed/
 project/boot/
 db_link
+github.db*
+git_hub_recommendations.sublime-workspace
+*.tsv

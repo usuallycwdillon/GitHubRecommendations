@@ -22,15 +22,15 @@ case class Database(fileName: String) {
   val repos = mutable.Map.empty[Long, FetchedRepo]
 
   def save() {
-    val output = new ObjectOutputStream(new FileOutputStream(fileName))
-    output.writeObject(this);
-    output.close();
-    
-    // Save backup incase something goes wrong with serialization.
+  // Save backup incase something goes wrong with serialization.
     Runtime.
       getRuntime.
       exec("cp " + fileName + " " + fileName + ".bak").
       waitFor()
+      
+    val output = new ObjectOutputStream(new FileOutputStream(fileName))
+    output.writeObject(this);
+    output.close();
   }
   
   def uncollectedUsers() = users.values.filterNot(_.collected)
