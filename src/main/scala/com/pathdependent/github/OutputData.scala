@@ -95,13 +95,13 @@ object OutputData {
   def outputRepositoryMeta() {
     writeWith("repo_meta.tsv") { output =>
       output.println(
-        "ID\tIs.Fork\tHas.Downloads\tHas.Issues\tHas.Wiki\tCreated.At\tN.Forks\tN.Open.Issues\tSize\tN.Watchers\tHomepage\tLanguage"
+        "ID\tIs.Fork\tHas.Downloads\tHas.Issues\tHas.Wiki\tCreated.At\tN.Forks\tN.Open.Issues\tSize\tN.Watchers\tHomepage\tLanguage\tName"
       )
       db.repos.values foreach { fetchedRepository =>
         val repo = fetchedRepository.repository
         if(repo != null) {
           output.println(
-            "%d\t%b\t%b\t%b\t%b\t%s\t%d\t%d\t%s\t%s\t%s".format(
+            "%d\t%b\t%b\t%b\t%b\t%s\t%d\t%d\t%d\t%d\t%s\t%s\t%s".format(
               repo.getId,
               repo.isFork,
               repo.isHasDownloads,
