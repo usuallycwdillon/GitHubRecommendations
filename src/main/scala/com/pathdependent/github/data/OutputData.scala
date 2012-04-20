@@ -95,7 +95,7 @@ object OutputData {
   def outputRepositoryMeta() {
     writeWith("repo_meta.tsv") { output =>
       output.println(
-        "ID\tIs.Fork\tHas.Downloads\tHas.Issues\tHas.Wiki\tCreated.At\tN.Forks\tN.Open.Issues\tSize\tN.Watchers\tHomepage\tLanguage\tName"
+        "ID\tIs.Fork\tHas.Downloads\tHas.Issues\tHas.Wiki\tCreated.At\tN.Forks\tN.Open.Issues\tSize\tN.Watchers\tLanguage\tName\tHomepage"
       )
       db.repos.values foreach { fetchedRepository =>
         val repo = fetchedRepository.repository
@@ -112,9 +112,9 @@ object OutputData {
               repo.getForks,
               repo.getSize,
               repo.getWatchers,
-              repo.getHomepage,
               repo.getLanguage,
-              repo.getName
+              repo.getName,
+              repo.getHomepage
             )
           )
         }

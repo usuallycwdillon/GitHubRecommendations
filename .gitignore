@@ -9,4 +9,6 @@ project/boot/
 db_link
 github.db*
 git_hub_recommendations.sublime-workspace
+
 *.tsv
+data.zip
