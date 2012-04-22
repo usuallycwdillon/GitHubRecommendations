@@ -1,0 +1,150 @@
+\documentclass{article}
+  \title{A Recommendation Algorithm for GitHub}
+  \author{John Bjorn Nelson, CW Dillon, and Ge Yan}
+  \usepackage{fullpage}
+  \usepackage{hyperref}
+  \usepackage{hyperref}
+  \hypersetup{
+      colorlinks,%
+      citecolor=black,%
+      filecolor=black,%
+      linkcolor=black,%
+      urlcolor=blue
+  }
+  \usepackage{textcomp}
+\begin{document}
+  \maketitle
+  
+  \begin{abstract}
+    A social network analysis is conducted on data collected from GitHub.
+  \end{abstract}
+
+  \section{Introduction}
+  
+  GitHub is a hosting service for git-based repositories. It launched in April 2008\cite{githublaunch}. As of April 2011, it hosts 2,000,000 repositories and 900,000 gists;\cite{githubnumbers} in September 21, 2011, GitHub announced it had over 1 million users.\cite{githubmillion} GitHub represents a departure from traditional version control hosting services in that it emphasizes the social aspects of software development. As such, the use of Social Network Analysis (SNA) may be useful in identifying and perhaps beneficially modifying patterns of user interaction.
+  
+  GitHub was aware of such potential at an early point of development. In 2009, a contest was created that gave users a snapshot of the available data.\cite{githubcontest} The purpose of this contest was to build a recommendation system that connected potential contributors with repositories that they would find interesting or useful. 
+  
+  From a social standpoint, the provided data were limited. Only the {\tt user watches repository} and {\tt user forks repository} relationships were provided.\footnote{Technically, only the {\tt user watches repository} relationship was explicitly provided; however, the {\tt user forked repository} relationship could be inferred.} Partially, this was a limitation of the feature set implemented by GitHub at the time. Since then, it has been extended. Currently, GitHub has relationships for 1) {\tt user belongs to organization}, 2) {\tt user follows user}, 3) {\tt user owns repository}, 4) {\tt user watches repository}, 5) {\tt user forks repository}, and 6) {\tt user contributes to repository}. 
+  
+  These additional relationship types should extend the predictive power of social network analysis in the context of contributor potential. Most significantly, the {\tt user contributing to a repository} relationship denotes the strongest level of social commitment. To obtain status as a contributor the user must have 1) forked the repository, 2) modified it in a way that the original author found useful, 3) submitted a pull request, and 4) had the pull request accepted. 
+  
+  For our project, we will collect a snapshot of GitHub's current relationships through the public API. Using this data, we will explore the data in the hopes of designing an algorithm that is capable of generating recommendations that produce \emph{contributors}. This goal is more direct than the original aim of GitHub in their 2009 contest. Rather than using interest in the form of generating {\tt user watches repository} relationships as our fitness metric, we will try to generate {\tt user contributes to a repository} relationships. Inherent in the original contests setup was the idea that watches generate contributions, which may not be true. We believe that contributors are more valuable than watchers, as contributors advance the state of existing projects while watchers only represent potential contributors.
+
+  \section{Data}
+
+  The data were collected with conditional permission from GitHub, insofar as they were aware and tolerant of the intent to gather information from their publicly accessible API\cite{githubapi}, but they would not increase the API limit of 5,000 requests per hour. While the goal was to gather a rough snapshot\footnote{A true snapshot would have all data collected at precisely the same moment; this API-based method of data collection yielded data that were temporarily disparate -- in some cases weeks apart. While the social graph is sufficiently powerful to tolerate such discrepancies, it does create some issues that require attention. For example, a user may create a repository and the collector may access the user information; then, the user subsequently deletes the repository before the collector fetches it, yielding a subsequent 404 not found error on accessing the repository.} of the entire GitHub social graph, the API limit conspired with the project's due date to curtail the authors' ambitions.
+
+  Many libraries in several languages exist for accessing github's API, including ActionScript, Clojure, CSharpe, Erlang, Haskell, Java, Javascript, Perl, PHP, Python, Ruby, and Scala\footnote{The Scala library is a recent addition; the repository was created after data collection was already halted.}.\cite{githublibraries} This project used the \emph{Eclipse Foundation}'s GitHub Mylyn Connector, a Java-based library.\footnote{The repository may be found at: https://github.com/eclipse/egit-github} While Java is less flexible than the other languages with github api libraries, it had the advantage of simple serialization\footnote{This was an previously untested assumption. As many agent-based modeling libraries -- including MASON -- make use of Java serialization for saving the simulation state, it was thought that saving the Mylyn objects to a serialized file would be very easy and less error prone than serialization to a database. Unfortunately, this was not the case. Java's serialization library suffers from problems with recursive objects, which caused a stack overflow early on in the data collection. Another week later, the collection size hit the top of the JVM's allocated space during serialization, causing the file to be catastrophically damaged. This footnote is included as a warning: Java serialization of large datasets is not worth the time savings. As an object persistence method, it is fragile and does not compare to solutions in other languages, most notably, AllegroCache.} and direct interface with Scala, which would be the languages of choice for writing the recommendation algorithm.
+
+  The following table shows the statistics of the data collection process. 
+
+  \begin{center}
+    \begin{tabular}{ | l | r |}
+    \hline
+    Data type & Items Collected \\ \hline
+    Users & 167,864 \\
+    Repositories & 1,073,232 \\
+    User Owns Repository Relationships & 1,073,601 \\
+    User Contributes To Repository Relationships & 354,563 \\
+    User Watches Repository Relationships & 1,079,536 \\
+    \hline
+    \end{tabular}
+  \end{center}
+
+  Some inconsistencies and counter-intuitive results need to be explained. The github API does not offer methods to capture a user and a repository simultaneously. Instead, API calls are lightweight, returning semantically precise information. Consequently, collecting the user's information, watch relationships, following relationships, owned repositories, and collaborations required separate API calls. The same is true for collection repository information. Given API rate limitations, it was decided that user collection would be limited to collecting the user information and the repositories they watched, and repository collection would be limited to the repository information, collaborating users, and watching users.
+
+  The collector was smart enough to not collect already collected information, but data collection required many API hits. An interleaved snowball sampling method was used.\footnote{See: \href{https://github.com/jbn/GitHubRecommendations/blob/master/src/main/scala/com/pathdependent/github/CollectData.scala}{/src/main/scala/com/pathdependent/github/CollectData.scala}} The collector was seeded with prominent users. (See following table.)
+
+  \begin{center}
+    \begin{tabular}{ | l | l |}
+    \hline
+    Username & Known For \\ \hline
+    \href{https://github.com/zedshaw}{zedshaw} & mongrel, mongrel2, lamson, widely-distributed rants \\
+    \href{https://github.com/cakephp}{cakephp}       & cakephp \\
+    \href{https://github.com/bartaz}{bartaz}        & impress.js \\
+    \href{https://github.com/mxcl}{mxcl}          & homebrew \\
+    \href{https://github.com/dhh}{dhh}          & rails \\
+    \href{https://github.com/mojombo}{mojombo}       & jekyll, github \\
+    \href{https://github.com/robbyrussell}{robbyrussell}  & oh-my-zsh \\
+    \href{https://github.com/nathanmarz}{nathanmarz}    & storm \\
+    \href{https://github.com/torvalds}{torvalds}      & linux \\
+    \href{https://github.com/sitaramc}{sitaramc}      & gitolite \\
+    \href{https://github.com/TTimo}{TTimo}         & doom3 \\
+    \href{https://github.com/rsms}{rsms}          & kod \\
+    \href{https://github.com/jboner}{jboner}       & akka \\
+    \href{https://github.com/hadley}{hadley}        & many R scripts \\
+    \href{https://github.com/ghc}{ghc}           & ghc \\
+    \href{https://github.com/daoudclarke}{daoudclarke}   & fortran code \\
+    \hline
+    \end{tabular}
+  \end{center}
+
+  The collector would grab the user and the owned repositories simultaneously. After collecting the user, the collector would evaluate the ratio of users to repositories. Although the ratio changed several times based on observed performance, it was intended that if the user : repository ratio skewed too far from the reported ratio of 1:2, the algorithm would favor collecting the referenced but uncollected items that would make the ratio comport with what was known. For example, if the collected user : repository ratio was 1:3, the collector would favor user collection; if the collected user : repository ratio was 2:1, it would favor repository collection.
+
+  At the conclusion of the simulation, it was possible to have uncollected but referenced repositories and users, which accounts for the discrepancies reported in TABLE X. Clearly, the final ratio of users to repositories -- roughly 1:6 -- is far from the reported ratio of 1:2. This can be explained by the distribution of repository ownership.
+
+  \section{Results}
+
+  \section{Basic Social Network Analysis}
+  
+  \subsection{Compiling the Contributor-Linked Repository Graph}
+
+  \subsection{A Simple Heuristic Model}
+
+  \begin{equation}
+    5 + 1
+  \end{equation}
+  A Simple HEURISTIC
+
+  \section{Discussion}
+
+  \subsection{The Surprising Sufficiency of a Simple Heuristic}
+  It is certainly plausible that a more sophisticated algorithm would be more capable at categorizing repositories of interest to a specific user. The heuristic employed is so simplistic that it borders on trivial. Nevertheless, a simple heuristic is powerful and, from an engineering standpoint, advantageous.
+
+  In \emph{Growing Artificial Societies}, Epstein and Axtell wrote:
+
+  \begin{quote}
+    It is not the emergent macroscopic object per se that is surprising, but the generative sufficiency of the simple local rules.\cite[p.52]{gas}
+  \end{quote}
+
+  Perhaps a similar observation can be made about heuristics acting on a social graph. Embedded within the social graph is a tremendous amount of accumulated, dynamic information. While the invoked heuristic is simple, it seems to be sufficient to exploit this repository or information. In some ways, that is surprising, but as social network analysis becomes more understood, it seems like it may be a recurring finding: the graph is highly concentrated, robust information.
+
+  From an engineering perspective, this simple heuristic has many desirable properties. In terms of software development, it is trivial. It took a mere three-hundred lines of Scala code to read in all the data, compile the social graph, and generate the record data. Although such single-use code is necessarily of lower-quality than production-ready code, it does give an idea as to the effort required.\footnote{This statement may be controversial. Seemingly, in computational research disciplines, the code quality should trump the quality of the report. Unfortunately, given limited time and academia's focus on paper publication, code quality necessarily suffers.}
+
+  The algorithm only depends on one-degree edges. Consequently, the only data requirement for this algorithm is maintenance of the repository graph. At one point, this may have been a cumbersome project, but NoSQL graph databases are becoming common. For example, in Java (and, by association, Scala) Neo4j\footnote{See: \href{http://neo4j.org/}{http://neo4j.org/} } could be used to maintain and persist the graph structure. 
+
+  \subsection{Recommended Implementation}
+
+  A potential usage pattern may provide clarification. Asynchronous worker tasks could periodically generate potential repository matches each day if a user's recommendations had been exhausted. First, the algorithm would filter the set of potential repositories to those that were written in the a language the user was familiar with, based on their own repositories and those the user had previously contributed to. This set would be further filtered to remove any repositories that had previously been suggested but ignored. Then, scanning through this set, the classification algorithm would find a small set of repositories, that yield a potential contributor match.
+
+  \section{Conclusion}
+
+  \begin{thebibliography}{1}
+
+  \bibitem{githublaunch}
+    Wanstrath, Chris., 2008. We Launched. \emph{github} Blog. [blog] April 10. Available at: \textless{}https://github.com/blog/40-we-launched\textgreater{} [Accessed 21 April 2012].
+
+  \bibitem{githubnumbers}
+    Neath, Kyle., 2011. Those are some big numbers. \emph{github} Blog. [blog] April 20. Available at \textless{}https://github.com/blog/841-those-are-some-big-numbers\textgreater{} [Accessed 21 April 2012].
+
+  \bibitem{githubmillion}
+    Costello, Jason., 2011. One Million. \emph{github} Blog. [blog] September 21. Available at \textless{}https://github.com/blog/936-one-million\textgreater{} [Accessed 21 April 2012].
+
+  \bibitem{githubapi}
+    github:developer, 2011. \emph{Github API v3}. [online] Available at: <http://developer.github.com/v3/> [Accessed 21 April 2012].
+  
+  \bibitem{githubcontest}
+    Chacon, Scott., 2009. The 2009 GitHub Contest. \emph{github} Blog. [blog] July 29. Available at \textless{}https://github.com/blog/466-the-2009-github-contest\textgreater{} [Accessed 21 April 2012].
+
+  \bibitem{githublibraries}
+    github:developer, 2011. \emph{Libraries | Github API}. [online] Available at: <http://developer.github.com/v3/libraries/> [Accessed 21 April 2012].
+    
+
+  \bibitem{gas}
+    Epstein, J.M. \& Axtell, R., 1996. \emph{Growing Artificial Societies: Social Science from the Bottom Up} M. P. Brookings, ed., The MIT Press.
+
+  \end{thebibliography}
+
+
+\end{document}
